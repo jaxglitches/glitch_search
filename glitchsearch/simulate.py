@@ -27,7 +27,9 @@ from . import noise as ns
 
 jax.config.update("jax_enable_x64", True)
 
-LINKS = ("12", "23", "31", "13", "32", "21")      # order of jaxglitches.INJ_POINTS
+# Test masses in the order of jaxglitches.INJ_POINTS ("tm_12", ...), which is what the
+# "inj_idx" of jaxglitches.run_catalog indexes: ("12", "23", "31", "13", "32", "21").
+LINKS = tuple(point.removeprefix("tm_") for point in jg.INJ_POINTS)
 
 # (X, Y, Z) of a glitch on test mass `link` from those of a glitch on test mass 12,
 # [X12, Y12, Z12 = 0], as (source, sign) per output channel. Relabelling the spacecraft

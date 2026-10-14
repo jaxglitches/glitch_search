@@ -1,7 +1,8 @@
-# Copied verbatim from jaxglitches/notebooks/noise.py (jaxglitches commit ee666d1), so that
-# the search sees exactly the noise of the jaxglitches examples: SciRD A = 3 fm/s^2/rtHz,
-# P = 15 pm/rtHz, equal-arm AET spectra in fractional frequency. Do not edit here; edit
-# upstream and re-copy.
+# Copied verbatim from notebooks/noise.py of github.com/jaxglitches/jaxglitches (identical
+# from commit ee666d1 to v0.1.0; the PyPI package does not ship it), so that the search sees
+# exactly the noise of the jaxglitches examples: SciRD A = 3 fm/s^2/rtHz, P = 15 pm/rtHz,
+# equal-arm AET spectra in fractional frequency. Do not edit here; edit upstream and re-copy.
+# The CI compares this file, below these five lines, with upstream main.
 """
 LISA noise PSDs and frequency-domain noise sampling — outside jaxglitches package.
 

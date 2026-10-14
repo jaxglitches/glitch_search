@@ -1,0 +1,41 @@
+[project]
+name = "glitchsearch"
+version = "0.1.0"
+description = "Excess-power search for LISA glitches in the WDM plane, with a matched-filter follow-up seeding jaxglitches"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    # The public API of the PyPI release: clean_signal_f, snr, run_catalog, INJ_POINTS.
+    # The APC global fit pins jaxglitches==0.1.0 (lisa-apc/global-fit, `glitch` extra);
+    # keep this range compatible with that pin.
+    "jaxglitches>=0.1.0,<0.2",
+    "jax>=0.10.0",
+    "numpy>=1.24",
+    "scipy>=1.11",
+]
+
+[project.urls]
+Repository = "https://github.com/jaxglitches/glitch_search"
+jaxglitches = "https://github.com/jaxglitches/jaxglitches"
+
+[project.optional-dependencies]
+# scripts/ draw the README's and the paper's figures (glitchsearch.plotting)
+scripts = [
+    "matplotlib",
+]
+# tests/test_wdm.py checks the WDM kernel against wdm_transform; the package itself
+# does not import it
+test = [
+    "pytest>=8",
+    "wdm-transform[jax]>=0.5.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["glitchsearch"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

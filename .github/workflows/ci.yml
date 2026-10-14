@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'     # weekly, to catch changes on jaxglitches main
+
+permissions:
+  contents: read
+
+jobs:
+  # The released jaxglitches, with the versions the APC global fit locks
+  # (lisa-apc/global-fit: Python >= 3.13, jax 0.10.2, numpy < 2.4) and the latest ones.
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python: '3.12'
+            pins: ''
+          - python: '3.13'
+            pins: 'jax==0.10.2 jaxlib==0.10.2 numpy==2.3.5 scipy==1.18.1 jaxglitches==0.1.0'
+    env:
+      JAX_PLATFORMS: cpu
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: '0.12.7'
+          python-version: ${{ matrix.python }}
+          enable-cache: true
+      - run: uv venv
+      - run: uv pip install ${{ matrix.pins }} -e '.[test]'
+      - run: uv run --no-sync python -c "import jaxglitches as jg; assert 'site-packages' in jg.__file__"
+      - run: uv run --no-sync pytest -q
+
+  # jaxglitches main: an early warning that the next release changes what we import.
+  jaxglitches-main:
+    runs-on: ubuntu-latest
+    env:
+      JAX_PLATFORMS: cpu
+    steps:
+      - uses: actions/checkout@v6
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: '0.12.7'
+          python-version: '3.13'
+          enable-cache: true
+      - run: uv venv
+      - run: uv pip install -e '.[test]' 'jaxglitches @ git+https://github.com/jaxglitches/jaxglitches@main'
+      - run: uv run --no-sync pytest -q
+      - name: The vendored noise model is still upstream's
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/jaxglitches/jaxglitches/main/notebooks/noise.py \
+            | diff - <(tail -n +6 glitchsearch/noise.py)

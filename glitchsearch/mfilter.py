@@ -283,6 +283,14 @@ class Seed:
     def link_idx(self):
         return LINKS.index(self.link)
 
+    def source(self, time_origin=0.0):
+        """The seed under the names of jaxglitches' [t0, Deltav, tau] and of the APC global
+        fit's glitch catalogue, with t0 made absolute: `time_origin` is the epoch of the
+        record's first sample. Deltav keeps its sign and `link` the test mass; the global
+        fit's glitch block fits link 12 with Deltav > 0 only (GLOBALFIT.md)."""
+        return {"t0": self.t0 + float(time_origin), "Deltav": self.dv, "tau": self.tau,
+                "link": self.link}
+
 
 def _profile_nm(x, cross, norm, omega, t_scale):
     """N and M at onset x[0] t_scale (relative to the heterodyne reference already applied to

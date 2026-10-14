@@ -304,3 +304,49 @@ how they want it cited; the acknowledgements are a placeholder.
   (backfitting) or RJ would improve the first seed of a pair.
 - The matched filter as a search clusters with a fixed 1-h gap, which splits long glitches
   (1.34 unmatched/yr); cluster by template duration instead.
+
+---
+
+## 2026-10-14 — Session 3: a public repository, jaxglitches 0.1.0, the global fit
+
+**Brief.** (1) jaxglitches moved to the public organisation github.com/jaxglitches; push this
+code to github.com/jaxglitches/glitch_search. (2) Align it with the current jaxglitches.
+(3) Keep an eye on compatibility with the APC global fit, where a collaborator has added a
+glitch block (lisa-apc/global-fit!186), without plugging the search in yet.
+
+### Repository
+
+This folder (`code/`) is the repository root; the paper drafts stay outside it. The first
+commit is the code as it stood after Session 2. The second makes the package installable
+(`pyproject.toml`) and adds a contract test, CI and `GLOBALFIT.md`.
+
+### jaxglitches: what changed, and what we import
+
+- `src/jaxglitches` is unchanged from commit ee666d1 (the one this code was written against)
+  to v0.1.0 at github.com/jaxglitches/jaxglitches. The six commits since are docs, CI, an
+  MIT licence, branding, and the PyPI release `jaxglitches==0.1.0`. `notebooks/noise.py` is
+  unchanged too, and is still not in the package, so it stays vendored here.
+- We import only its public API: `clean_signal_f(params, freq, tdi=1, basis="XYZ")`, `snr`,
+  `run_catalog`, `INJ_POINTS`. `LINKS` is now derived from `INJ_POINTS`, the order that
+  `run_catalog`'s `inj_idx` indexes, instead of being repeated by hand.
+- New `tests/test_jaxglitches.py`: link order equals `jg.INJ_POINTS` and `jg.LINKS`;
+  `glitch_fd` on test mass 12 equals `jg.clean_signal_f(..., basis="AET")` to 1e-12; the
+  catalogue's injection points map to `LINKS`; `Seed.source()`.
+- Checked against the PyPI wheel in a clean Python 3.13 environment with the global fit's
+  lock (jax 0.10.2, numpy 2.3.5, scipy 1.18.1): 28 tests pass. `run_search.py showcase` and
+  `lpf` reproduce `results/search_*.npz` to 1e-12, and `followup.py showcase` reproduces the
+  seeds to < 1e-6 relative (L-BFGS-B across scipy 1.17 → 1.18; every printed digit equal).
+  The tests also pass in the original environment (Python 3.12, jax 0.10.1, numpy 2.4.6).
+
+### The global fit's glitch block (!186, surveyed 2026-10-14)
+
+- `globalfit/glitch`: `GlitchModel`/`GlitchLikelihood` (Cholesky-whitened XYZ, TDI-1 or 2,
+  equal arms or frozen `link_ltt` delays via `clean_signal_f_unequal`), `GlitchGenerator`
+  (catalogue `glitch_cat.h5`: t0, Deltav, tau + response metadata), and `GlitchBlock`
+  (jexplore MCMC from a `source` estimate, one glitch, link 12, Deltav > 0). It installs
+  `jaxglitches==0.1.0` as the `glitch` extra; the global fit needs Python ≥ 3.13.
+- Conventions agree with ours: continuous Fourier amplitudes, bin variance S T/2, parameter
+  order and names. `Seed.source(time_origin)` gives the block's `source` dict.
+- What a search block would still need (data model, edges, recalibration, link and polarity
+  in the block, response-matched follow-up, MBHB subtraction, the `GBSearchBlock` shape):
+  `GLOBALFIT.md`.

@@ -11,18 +11,32 @@ yardstick for what not assuming the waveform costs, and as a follow-up that turn
 event into a seed (t₀, Δv, τ, test mass) for jaxglitches — after which the seeds are
 subtracted and the residual searched again.
 
-The paper draft is `../paper/main.tex`; `RESEARCH_LOG.md` records what was done, found and
-fixed, session by session.
+`RESEARCH_LOG.md` records what was done, found and fixed, session by session (the paper
+draft it mentions is kept outside this repository). `GLOBALFIT.md` tracks what a search block
+in the APC global fit would need.
+
+## Install
+
+Python ≥ 3.12. The glitch templates come from the released
+[jaxglitches](https://github.com/jaxglitches/jaxglitches) (`jaxglitches>=0.1.0,<0.2`, from
+PyPI); the SciRD noise model of its examples, which the package does not ship, is vendored in
+`glitchsearch/noise.py`.
+
+```sh
+git clone https://github.com/jaxglitches/glitch_search.git
+cd glitch_search
+pip install -e '.[scripts,test]'     # matplotlib for the scripts; pytest, wdm_transform for tests
+```
+
+To develop against a jaxglitches checkout instead, install it on top:
+`pip install --no-deps -e ../jaxglitches`.
 
 ## Quick start
 
-Everything runs in the jaxglitches environment (jax 0.10, `wdm_transform`, matplotlib):
-
 ```sh
-PY=/home/giorgio/Desktop/jaxglitches/.venv/bin/python
-cd /home/giorgio/Desktop/glitch_search/code
+PY=python                                   # the environment above
 
-$PY -m pytest -q tests                      # 24 tests, ~15 s
+$PY -m pytest -q tests                      # 28 tests, ~20 s
 $PY scripts/design_tiling.py --banks        # why dt = 60 s, A+E, and the WDM ladder   (~3 min)
 $PY scripts/calibrate_far.py --years 400    # false-alarm rate measured on noise        (~2 min)
 $PY scripts/efficiency.py --per-cell 60     # 2700 injections vs the analytic prediction (~1 min)
@@ -61,8 +75,8 @@ events[0].summary()   # t_hat, log10p, log10_far, rho_ep, seed tiling, band top 
 
 ## Design, and the numbers behind it
 
-**Cutting high frequencies (dt = 60 s, f_Nyq = 8.33 mHz).** Your intuition holds in terms of
-SNR. Below 8.33 mHz every glitch keeps ≥ 98.0% of its ρ² (A+E+T, over 10⁻⁵–1 Hz), and
+**Cutting high frequencies (dt = 60 s, f_Nyq = 8.33 mHz).** The intuition that glitches carry
+little high-frequency content holds in terms of SNR. Below 8.33 mHz every glitch keeps ≥ 98.0% of its ρ² (A+E+T, over 10⁻⁵–1 Hz), and
 anything with τ ≳ 30 s keeps > 99.9%. For the shortest glitches the cause is the noise, not
 the glitch: for τ → 0 the TDI-1 response is flat up to the knee, but the OMS noise in
 fractional frequency rises as f⁴ above ~3 mHz. The 3 mHz band of the inference paper would
@@ -229,11 +243,13 @@ glitchsearch/
   truth.py     what made each event, in simulations
   mfilter.py   matched filter: bank in tau x arm, Delta v analytic, t0 by FFT; the follow-up
   pipeline.py  search, follow up, subtract, search again
-  noise.py     verbatim copy of jaxglitches/notebooks/noise.py (commit ee666d1)
+  noise.py     verbatim copy of jaxglitches' notebooks/noise.py (v0.1.0; CI checks for drift)
   plotting.py  the paper's figure style
 scripts/       design_tiling, calibrate_far, efficiency, run_search, followup (see Quick start)
 tests/         the kernel against wdm_transform, chi^2 calibration, recovery, attribution,
-               the matched filter, the follow-up across the year's join, the loop on a pair
+               the matched filter, the follow-up across the year's join, the loop on a pair,
+               the contract with jaxglitches (link order, AET basis, seed hand-off)
+GLOBALFIT.md   compatibility with the glitch block of the APC global fit
 ```
 
 ## Limits, and what would come next
